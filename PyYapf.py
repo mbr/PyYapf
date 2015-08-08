@@ -201,15 +201,24 @@ class YapfCommand(sublime_plugin.TextCommand):
                 py_filename = self.save_selection_to_tempfile(selection)
 
                 if py_filename:
-                    style_filename = save_style_to_tempfile(
-                        settings.get("config", {}))
-
                     yapf = os.path.expanduser(
                         settings.get("yapf_command", "/usr/local/bin/yapf"))
 
-                    cmd = [yapf, "--style={0}".format(style_filename),
-                           "--verify", "--in-place", py_filename]
+                    cmd = [yapf, "--verify", "--in-place"]
 
+                    style_conf = settings.get('config', {})
+
+                    style_filename = None
+                    if isinstance(style_conf, dict):
+                        # if it's a dict, we build a style configuration file
+                        style_filename = save_style_to_tempfile(
+                            settings.get("config", {}))
+                        cmd.extend(['--style', style_filename])
+                    elif style_conf:
+                        # just a string: pass through unchanged
+                        cmd.extend(['--style', style_conf])
+
+                    cmd.append(py_filename)
                     print('Running {0}'.format(cmd))
                     environment = os.environ.copy()
                     environment['LANG'] = self.encoding
@@ -245,7 +254,8 @@ class YapfCommand(sublime_plugin.TextCommand):
                             print(file_handle.read())
 
                     os.unlink(py_filename)
-                os.unlink(style_filename)
+                if style_filename:
+                    os.unlink(style_filename)
 
         print('restoring cursor to ', region, repr(region))
         self.view.show_at_center(region)
