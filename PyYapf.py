@@ -275,3 +275,20 @@ class YapfCommand(sublime_plugin.TextCommand):
             syntax = os.path.splitext(syntaxPath)[0].split('/')[-1].lower()
 
         return ext == 'py' or "Python" in syntax
+
+
+class YAPFSaveHandler(sublime_plugin.EventListener):
+    def on_pre_save(self, view):
+        # hopefully, this is cached somewhere...
+        settings = sublime.load_settings("PyYapf.sublime-settings")
+
+        if settings.get('yapf_on_save', False):
+            # run yapf on our view, before saving, but only if selection is
+            # empty
+
+            # there is always at least one region
+            region = next(iter(view.sel()))
+            if region.empty():
+                # only run if we have nothing selected
+                print('Running YAPF on save')
+                sublime.run_command('yapf')  # why is this not working?
