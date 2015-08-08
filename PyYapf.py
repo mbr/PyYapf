@@ -14,7 +14,8 @@ import subprocess
 import sys
 import tempfile
 
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
 
 PY3 = (sys.version_info[0] >= 3)
 KEY = "pyyapf"
@@ -258,10 +259,9 @@ class YapfCommand(sublime_plugin.TextCommand):
         syntax = ""
         ext = ""
 
-        if (fName != None): # file exists, pull syntax type from extension
+        if fName is not None:  # file exists, pull syntax type from extension
             ext = os.path.splitext(fName)[1][1:]
-        if(syntaxPath != None):
+        if syntaxPath is not None:
             syntax = os.path.splitext(syntaxPath)[0].split('/')[-1].lower()
 
         return ext == 'py' or "Python" in syntax
-
